@@ -1,4 +1,4 @@
-# KasKeeper_Dapp# Getting Started with Create React App
+# KasKeeper_Dapp
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
