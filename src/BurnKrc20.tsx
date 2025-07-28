@@ -29,7 +29,7 @@ const BurnKrc20 = () => {
     <Card size="small" title="Burn KRC20" style={{ width: 300, margin: 10 }}>
       <div style={{ textAlign: 'left', marginTop: 10 }}>
         <div style={{ fontWeight: 'bold' }}>Ticker:</div>
-        <Input
+        <Input.TextArea
           value={formData.ticker}
           onChange={(e) => {
             setFormData({

@@ -7,6 +7,7 @@ import IssueKrc20 from './IssueKrc20';
 import BurnKrc20 from './BurnKrc20';
 import ChownKrc20 from './Chown';
 import BlacklistKrc20 from './BlacklistKrc20';
+import ClaimERC20 from './ClaimERC20';
 export const randomString = (len = 4) => {
   var $chars = 'ABCDEFGHJKMNPQRSTWXYZ';
   var maxPos = $chars.length;
@@ -311,6 +312,9 @@ function App() {
               getKRC20Balance={getKRC20Balance}
             />
             {
+              layer === 'L2' && <ClaimERC20 address={address} getKRC20Balance={getKRC20Balance}/>
+            }
+            {
               layer === 'L1' && (
                 <>
                 <DeployKrc20 />
@@ -462,21 +466,22 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
   return (
     <Card size="small" title="Send kaspa" style={{ width: 300, margin: 10 }}>
       {
-        !['l2ERC20'].includes(type) && (
+        !['L2PayloadTransfer'].includes(type) && (
           <div style={{ textAlign: 'left', marginTop: 10 }}>
             <div style={{ fontWeight: 'bold' }}>Receiver Address:</div>
-            <Input
+            <Input.TextArea
               value={toAddress}
+              rows={2}
               // defaultValue={toAddress}
               onChange={(e) => {
                 setToAddress(e.target.value);
-              }}></Input>
+              }}></Input.TextArea>
           </div>
         )
       }
 
       {
-        !['l2ERC20'].includes(type) && (
+        !['L2PayloadTransfer'].includes(type) && (
           <div style={{ textAlign: 'left', marginTop: 10 }}>
             <div style={{ fontWeight: 'bold' }}>Amount: (KAS)</div>
             <Input
@@ -497,9 +502,9 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
             defaultValue={type}
             style={{ width: '100%', textAlign: 'left' }}
             options={[
-              { value: 'l2Kaspa', label: 'L2Kaspa' },
-              { value: 'l2ERC20', label: 'L2ERC20' },
-              { value: 'l2Specailtx', label: 'L2Specailtx' }
+              { value: 'L2Kaspa', label: 'L2Kaspa' },
+              { value: 'L2PayloadTransfer', label: 'L2PayloadTransfer' },
+              { value: 'L2Erc20Transfer', label: 'L2Erc20Transfer' }
             ]}
             onChange={(value) => {
               setType(value);
@@ -510,7 +515,7 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
       }
 
       {
-        ['l2Specailtx'].includes(type) && (
+        ['L2Erc20Transfer'].includes(type) && (
           <div style={{ textAlign: 'left', marginTop: 10 }}>
             <div style={{ fontWeight: 'bold' }}>tick:</div>
             <Select value={tick} allowClear onChange={value => {
@@ -527,7 +532,7 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
       }
 
       {
-        ['l2ERC20'].includes(type) && (
+        ['L2PayloadTransfer'].includes(type) && (
           <div style={{ textAlign: 'left', marginTop: 10 }}>
             <div style={{ fontWeight: 'bold' }}>unsignedTx</div>
             <Input.TextArea
@@ -561,21 +566,28 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
           try {
             if (layer === 'L2') {
               let txid = '';
-              if (type === 'l2Kaspa') {
+              if (type === 'L2Kaspa') {
                 txid = await (window as any).Kaskeeper.sendL2Kaspa(toAddress, kasAmount * (10 ** 18), {
                   feeRate: '0.000021',
                 });
-              } else if (type === 'l2ERC20') {
+              } else if (type === 'L2PayloadTransfer') {
                 console.log('erc20Params', JSON.parse(unsignedTx))
-                txid = await (window as any).Kaskeeper.sendL2ERC20(JSON.parse(unsignedTx), {
+                // txid = await (window as any).Kaskeeper.sendL2ERC20(JSON.parse(unsignedTx), {
+                //   feeRate: '0.000021',
+                // });
+                txid = await (window as any).Kaskeeper.L2PayloadTransfer(JSON.parse(unsignedTx), {
                   feeRate: '0.000021',
                 });
                 setTimeout(() => {
                   getKRC20Balance();
                 }, 4000);
-              } else if (type === 'l2Specailtx') {
+                console.log('txid', txid)
+              } else if (type === 'L2Erc20Transfer') {
                 const tokenContractAddress = tick;
-                txid = await (window as any).Kaskeeper.sendL2Specailtx(toAddress, (kasAmount * ( 10 ** 18)), tokenContractAddress, {
+                // txid = await (window as any).Kaskeeper.sendL2Specailtx(toAddress, (kasAmount * ( 10 ** 18)), tokenContractAddress, {
+                //   feeRate: '0.000021',
+                // });
+                txid = await (window as any).Kaskeeper.L2Erc20Transfer(toAddress, (kasAmount * ( 10 ** 18)), tokenContractAddress, {
                   feeRate: '0.000021',
                 });
               }
@@ -598,6 +610,7 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
               getBalance();
             }
           } catch (e) {
+                console.log('txid', e)
             setTxid((e as any).message);
           }
         }}>
@@ -639,11 +652,11 @@ function TransferKRC20({krc20Balances, getKRC20Balance}: {
     <Card size="small" title="Transfer KRC20" style={{ width: 300, margin: 10 }}>
       <div style={{ textAlign: 'left', marginTop: 10 }}>
         <div style={{ fontWeight: 'bold' }}>Receiver Address:</div>
-        <Input
+        <Input.TextArea
           defaultValue={toAddress}
           onChange={(e) => {
             setToAddress(e.target.value);
-          }}></Input>
+          }}/>
       </div>
       <div style={{ textAlign: 'left', marginTop: 10 }}>
         <div style={{ fontWeight: 'bold' }}>tick:</div>

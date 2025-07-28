@@ -42,8 +42,9 @@ const IssueKrc20 = () => {
 
       <div style={{ textAlign: 'left', marginTop: 10 }}>
         <div style={{ fontWeight: 'bold' }}>Recipient:</div>
-        <Input
+        <Input.TextArea
           value={formData.recipient}
+          rows={3}
           onChange={(e) => {
             setFormData({
               ...formData,
