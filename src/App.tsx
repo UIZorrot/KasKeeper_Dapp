@@ -504,7 +504,9 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
             options={[
               { value: 'L2Kaspa', label: 'L2Kaspa' },
               { value: 'L2PayloadTransfer', label: 'L2PayloadTransfer' },
-              { value: 'L2Erc20Transfer', label: 'L2Erc20Transfer' }
+              { value: 'L2Erc20Transfer', label: 'L2Erc20Transfer' },
+              { value: 'l2ERC20', label: 'L2ERC20' },
+              { value: 'l2Specailtx', label: 'L2Specailtx' }
             ]}
             onChange={(value) => {
               setType(value);
@@ -515,7 +517,7 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
       }
 
       {
-        ['L2Erc20Transfer'].includes(type) && (
+        ['L2Erc20Transfer', 'l2Specailtx'].includes(type) && (
           <div style={{ textAlign: 'left', marginTop: 10 }}>
             <div style={{ fontWeight: 'bold' }}>tick:</div>
             <Select value={tick} allowClear onChange={value => {
@@ -532,7 +534,7 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
       }
 
       {
-        ['L2PayloadTransfer'].includes(type) && (
+        ['L2PayloadTransfer', 'l2ERC20'].includes(type) && (
           <div style={{ textAlign: 'left', marginTop: 10 }}>
             <div style={{ fontWeight: 'bold' }}>unsignedTx</div>
             <Input.TextArea
@@ -565,6 +567,7 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
         onClick={async () => {
           try {
             if (layer === 'L2') {
+                console.log('l2ERC20', type)
               let txid = '';
               if (type === 'L2Kaspa') {
                 txid = await (window as any).Kaskeeper.sendL2Kaspa(toAddress, kasAmount * (10 ** 18), {
@@ -572,9 +575,6 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
                 });
               } else if (type === 'L2PayloadTransfer') {
                 console.log('erc20Params', JSON.parse(unsignedTx))
-                // txid = await (window as any).Kaskeeper.sendL2ERC20(JSON.parse(unsignedTx), {
-                //   feeRate: '0.000021',
-                // });
                 txid = await (window as any).Kaskeeper.L2PayloadTransfer(JSON.parse(unsignedTx), {
                   feeRate: '0.000021',
                 });
@@ -582,12 +582,18 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
                   getKRC20Balance();
                 }, 4000);
                 console.log('txid', txid)
+              } else if (type === 'l2ERC20') {
+                txid = await (window as any).Kaskeeper.sendL2ERC20(JSON.parse(unsignedTx), {
+                  feeRate: '0.000021',
+                });
               } else if (type === 'L2Erc20Transfer') {
                 const tokenContractAddress = tick;
-                // txid = await (window as any).Kaskeeper.sendL2Specailtx(toAddress, (kasAmount * ( 10 ** 18)), tokenContractAddress, {
-                //   feeRate: '0.000021',
-                // });
                 txid = await (window as any).Kaskeeper.L2Erc20Transfer(toAddress, (kasAmount * ( 10 ** 18)), tokenContractAddress, {
+                  feeRate: '0.000021',
+                });
+              } else if (type === 'l2Specailtx') {
+                const tokenContractAddress = tick;
+                txid = await (window as any).Kaskeeper.sendL2Specailtx(toAddress, (kasAmount * ( 10 ** 18)), tokenContractAddress, {
                   feeRate: '0.000021',
                 });
               }

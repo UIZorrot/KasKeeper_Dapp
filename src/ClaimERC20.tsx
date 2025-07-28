@@ -476,6 +476,7 @@ const ClaimERC20 = ({
 		try {
 			setLoading(true)
 			const data = await (window as any).Kaskeeper.claimTestErc20(formData.address)
+			console.log('Faucet calim data', data)
 			setTxid(data?.txId)
 			if (address === formData.address && getKRC20Balance) getKRC20Balance()
 		} catch (error:any) {
