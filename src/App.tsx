@@ -505,8 +505,8 @@ function SendKaspa({krc20Balances, getBalance, layer, getKRC20Balance}:{
               { value: 'L2Kaspa', label: 'L2Kaspa' },
               { value: 'L2PayloadTransfer', label: 'L2PayloadTransfer' },
               { value: 'L2Erc20Transfer', label: 'L2Erc20Transfer' },
-              { value: 'l2ERC20', label: 'L2ERC20' },
-              { value: 'l2Specailtx', label: 'L2Specailtx' }
+              // { value: 'l2ERC20', label: 'L2ERC20' },
+              // { value: 'l2Specailtx', label: 'L2Specailtx' }
             ]}
             onChange={(value) => {
               setType(value);

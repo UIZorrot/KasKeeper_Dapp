@@ -448,108 +448,104 @@ const abi = [
 		"type": "function"
 	}
 ]
-const ClaimERC20 = ({
-  address,
-  getKRC20Balance
-} : {
-  address: string,
-  getKRC20Balance: () => void
-}) => {
-  const [txid, setTxid] = useState('');
-	const [loading, setLoading] = useState(false)
+const gasPrice = 2001000000000
 
-  const [formData, setFormData] = useState({
-    address: '', // '0xE78685F28dF1Aedab0d22cA3a1Dd1A43F07Ab614'
-  });
+const ClaimERC20 = ({
+	address,
+	getKRC20Balance
+}: {
+	address: string,
+	getKRC20Balance: () => void
+}) => {
+	const [txid, setTxid] = useState('');
+
+	const [formData, setFormData] = useState({
+		address: '', // '0xE78685F28dF1Aedab0d22cA3a1Dd1A43F07Ab614'
+	});
 	useEffect(() => {
-    setFormData({
+		setFormData({
 			address: address
 		})
 	}, [address])
-  const handleClaim = async () => {
+	const handleClaim = async () => {
 		if (!formData.address) return
-		// const web3 = new Web3(rpcUrl)
-		// const contract = new web3.eth.Contract(abi, contractAddress);
-		// const balance = await contract.methods.balanceOf(contractAddress).call()
-		// console.log('balance', balance)
 
 		try {
-			setLoading(true)
-			const data = await (window as any).Kaskeeper.claimTestErc20(formData.address)
-			console.log('Faucet calim data', data)
-			setTxid(data?.txId)
+
+			const account = formData.address;
+			console.log(account)
+			if (!account) return {};
+			// const privateKey = await wallet.getPrivateKeyAny(account)
+			const web3 = new Web3(rpcUrl)
+			const contract = new web3.eth.Contract(abi, contractAddress);
+			const balanceWei = await web3.eth.getBalance(account);
+			// const gasPrice = await web3.eth.getGasPrice();
+			const gasLimit = await contract.methods.requestTokens(account).estimateGas()
+			if (gasLimit * BigInt(gasPrice) > balanceWei) {
+				throw new Error('Insufficient balance')
+			}
+			const tx = {
+				from: account,
+				to: contractAddress,
+				gas: Number(gasLimit), // 53793n, // gasLimit,
+				gasPrice: gasPrice, // Web3.utils.toWei(gasPrice, 'ether'),
+				data: contract.methods.requestTokens(account).encodeABI()
+			}
+
+			console.log(tx)
+
+			const data = await (window as any).Kaskeeper.L2PayloadTransfer(
+				tx,
+				{
+					priorityFee: 0.000021
+				}
+			)
+			console.log('Faucet data', data)
+			setTxid(data)
 			if (address === formData.address && getKRC20Balance) getKRC20Balance()
-		} catch (error:any) {
+		} catch (error: any) {
 			console.log('error', error)
-			setTxid(error?.message || error as string)
+			setTxid(error?.innerError?.message || error?.message || error as string)
 		} finally {
-			setLoading(false)
 		}
-		
-    // 连接rpc
-    // try {
-    //   if (!formData.address || !address) return
-    //   const web3 = new Web3(rpcUrl)
-    //   const contract = new web3.eth.Contract(abi, contractAddress);
-    //   const gasPrice = await web3.eth.getGasPrice();
-    //   const gasLimit = await contract.methods.requestTokens(formData.address).estimateGas();
-      
-    //   const tx = {
-    //     from: '0xE78685F28dF1Aedab0d22cA3a1Dd1A43F07Ab614',
-    //     to: contractAddress,
-    //     gas: gasLimit,
-    //     gasPrice,
-    //     data: contract.methods.requestTokens(formData.address).encodeABI()
-    //   }
-    //   console.log('gasLimit', tx)
-    //   const signedTx = await web3.eth.accounts.signTransaction(tx, '0x4350f2a05179f86b9641d0996c6f8654d5924c828c5247018c28a84b99b87c44')
-    //   const txResponse = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-    //   console.log('contract.methods', signedTx, txResponse)
-		// 	setTxid(txResponse?.transactionHash as string)
-    //   if (address === formData.address && getKRC20Balance) getKRC20Balance()
-    // } catch (error) {
-    //   console.log('error', error)
-		// 	setTxid(error as string)
-    //   console.log('error', error?.message)
-    // }
-  };
+	};
 
-  useEffect(() => {
-  }, []);
+	useEffect(() => {
+	}, []);
 
-  return (
-    <Card size="small" title="TKASE Faucet" style={{ width: 300, margin: 10 }}>
-      <div style={{ textAlign: 'left', marginTop: 10 }}>
-        <div style={{ fontWeight: 'bold' }}>Address:</div>
-        <Input.TextArea
-          value={formData.address}
-          rows={2}
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              address: e.target.value,
-            });
-          }} />
-      </div>
+	return (
+		<Card size="small" title="TKASE Faucet" style={{ width: 300, margin: 10 }}>
+			<div style={{ textAlign: 'left', marginTop: 10 }}>
+				<div style={{ fontWeight: 'bold' }}>Address:</div>
+				<Input.TextArea
+					value={formData.address}
+					rows={2}
+					onChange={(e) => {
+						setFormData({
+							...formData,
+							address: e.target.value,
+						});
+					}} />
+			</div>
 
-      <div style={{ textAlign: 'left', marginTop: 10 }}>
-        <div style={{ fontWeight: 'bold' }}>txid:</div>
-        <div style={{ wordWrap: 'break-word' }}>{txid}</div>
-      </div>
-      <Button
-        style={{ marginTop: 10 }}
-				loading={loading}
-        onClick={async () => {
-          try {
-            await handleClaim();
-          } catch (e) {
-            setTxid((e as any).message);
-          }
-        }}>
-        Claim 10 TKASE
-      </Button>
-    </Card>
-  );
+			<div style={{ textAlign: 'left', marginTop: 10 }}>
+				<div style={{ fontWeight: 'bold' }}>txid:</div>
+				<div style={{ wordWrap: 'break-word' }}>{txid}</div>
+			</div>
+			<Button
+				style={{ marginTop: 10 }}
+				onClick={async () => {
+					try {
+						await handleClaim();
+					} catch (e) {
+						setTxid((e as any).message);
+					}
+				}}>
+				Claim 10 TKASE
+			</Button>
+		</Card>
+	);
 }
 
 export default ClaimERC20
+
