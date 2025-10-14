@@ -8,6 +8,7 @@ import BurnKrc20 from './BurnKrc20';
 import ChownKrc20 from './Chown';
 import BlacklistKrc20 from './BlacklistKrc20';
 import ClaimERC20 from './ClaimERC20';
+import SendL2ETH from './SendL2ETH';
 export const randomString = (len = 4) => {
   var $chars = 'ABCDEFGHJKMNPQRSTWXYZ';
   var maxPos = $chars.length;
@@ -312,7 +313,10 @@ function App() {
               getKRC20Balance={getKRC20Balance}
             />
             {
-              layer === 'L2' && <ClaimERC20 address={address} getKRC20Balance={getKRC20Balance}/>
+              layer === 'L2' && <>
+                <ClaimERC20 address={address} getKRC20Balance={getKRC20Balance}/>
+                <SendL2ETH address={address} getKRC20Balance={getKRC20Balance}/>
+              </>
             }
             {
               layer === 'L1' && (
