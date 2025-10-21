@@ -9,6 +9,7 @@ import ChownKrc20 from './Chown';
 import BlacklistKrc20 from './BlacklistKrc20';
 import ClaimERC20 from './ClaimERC20';
 import SendL2ETH from './SendL2ETH';
+import L1L2Console from './L1L2Console';
 export const randomString = (len = 4) => {
   var $chars = 'ABCDEFGHJKMNPQRSTWXYZ';
   var maxPos = $chars.length;
@@ -330,6 +331,9 @@ function App() {
                 <TransferKRC20 krc20Balances={krc20Balances} getKRC20Balance={getKRC20Balance}/>
                 </>
               )
+            }
+            {
+              <L1L2Console />
             }
             {/* <DeployKRC20 /> */}
             {/* 
