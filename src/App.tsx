@@ -147,6 +147,7 @@ function App() {
   });
   const self = selfRef.current;
   const handleAccountsChanged = useCallback((_accounts: string[]) => {
+    console.log('accounts has changed', _accounts)
     if (self.accounts[0] === _accounts[0]) {
       // prevent from triggering twice
       return;
@@ -165,13 +166,18 @@ function App() {
   }, [getBasicInfo, self]);
 
   const handleNetworkChanged = useCallback((network: string) => {
-    console.log('network', network);
+    console.log('network has changed', network);
     setNetwork(network);
     getBasicInfo();
   }, [getBasicInfo]);
 
   const handleLayerChanged = useCallback((layer: string) => {
+    console.log('layer has changed', layer);
     getBasicInfo();
+  }, [getBasicInfo]);
+
+  const balanceChangedChanged = useCallback((balance: string) => {
+    console.log('balance has changed', balance);
   }, [getBasicInfo]);
 
   const handleKRC20BatchTransferChangedChanged = (ress: BatchTransferRes[]) => {
@@ -203,17 +209,19 @@ function App() {
       Kaskeeper.on('networkChanged', handleNetworkChanged);
       Kaskeeper.on('krc20BatchTransferChanged', handleKRC20BatchTransferChangedChanged);
       Kaskeeper.on('layerChanged', handleLayerChanged);
+      Kaskeeper.on('balanceChanged', balanceChangedChanged);
 
       return () => {
         Kaskeeper.removeListener('accountsChanged', handleAccountsChanged);
         Kaskeeper.removeListener('networkChanged', handleNetworkChanged);
         Kaskeeper.removeListener('krc20BatchTransferChanged', handleKRC20BatchTransferChangedChanged);
         Kaskeeper.removeListener('layerChanged', handleLayerChanged);
+        Kaskeeper.removeListener('balanceChanged', balanceChangedChanged);
       };
     }
 
     checkKaskeeper().then();
-  }, [handleAccountsChanged, handleNetworkChanged, handleLayerChanged]);
+  }, [handleAccountsChanged, handleNetworkChanged, handleLayerChanged, balanceChangedChanged]);
 
   if (!KaskeeperInstalled) {
     return (
@@ -345,7 +353,7 @@ function App() {
             <Button
               onClick={async () => {
                 const result = await Kaskeeper.requestAccounts();
-                console.log('result', result)
+                console.log('connect Kaskeeper Wallet result', result)
                 handleAccountsChanged(result);
               }}>
               Connect Kaskeeper Wallet

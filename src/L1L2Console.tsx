@@ -6,8 +6,8 @@ import { DeleteOutlined } from '@ant-design/icons';
 const { Title, Text, Paragraph } = Typography;
 
 /* --------------- 类型定义 --------------- */
-type Layer = 'L1' | 'L2';
-type Method = 'accounts' | 'balance' | 'disconnect';
+type Layer = 'L1' | 'L2' | '';
+type Method = 'accounts' | 'balance' | 'disconnect' | 'connect' | 'connectionState' | 'isConnected';
 
 interface ResultItem {
   method: string;
@@ -24,6 +24,7 @@ const L1L2Console: React.FC = () => {
   /* 统一调用函数 */
   const call = async (layer: Layer, action: Method) => {
     const key = `${layer}_${action}`;
+    console.log('call', layer, action)
     setLoading({ ...loading, [key]: true });
     try {
       let data: any;
@@ -32,14 +33,21 @@ const L1L2Console: React.FC = () => {
         data = await (window as any).Kaskeeper[`get${layer}Accounts`]();
       else if (action === 'balance')
         data = await (window as any).Kaskeeper[`get${layer}Balance`]();
-      else
-        data = await (window as any).Kaskeeper[`disconnect${layer}`](); // 返回一般无意义
+      else if (action === 'disconnect')
+        data = await (window as any).Kaskeeper[`disconnect${layer}`]();
+      else if (action === 'connect')
+        data = await (window as any).Kaskeeper[`connect${layer}`]();
+      else if (action === 'connectionState')
+        data = await (window as any).Kaskeeper[`getConnectionState`]();
+      else if (action === 'isConnected')
+        data = await (window as any).Kaskeeper[`is${layer}Connected`]();
 
       setResults({ ...results, [key]: { method: action, layer, data } });
-    } catch (e: any) {
+    } catch (error: any) {
+      console.error('error', error)
       setResults({
         ...results,
-        [key]: { method: action, layer, data: null, error: e.message || 'Unknown error' },
+        [key]: { method: action, layer, data: null, error: error.message || 'Unknown error' },
       });
     } finally {
       setLoading({ ...loading, [key]: false });
@@ -54,6 +62,11 @@ const L1L2Console: React.FC = () => {
     { text: 'Get L2 Balance', layer: 'L2', action: 'balance', type: 'default' },
     { text: 'Disconnect L1', layer: 'L1', action: 'disconnect', type: 'default' },
     { text: 'Disconnect L2', layer: 'L2', action: 'disconnect', type: 'default' },
+    { text: 'Connect L1', layer: 'L1', action: 'connect', type: 'default' },
+    { text: 'Connect L2', layer: 'L2', action: 'connect', type: 'default' },
+    { text: 'Get Connection State', layer: '', action: 'connectionState', type: 'default' },
+    { text: 'L1 is Connected', layer: 'L1', action: 'isConnected', type: 'default' },
+    { text: 'L2 is Connected', layer: 'L2', action: 'isConnected', type: 'default' },
   ];
 
   /* 渲染单个结果卡片 */
