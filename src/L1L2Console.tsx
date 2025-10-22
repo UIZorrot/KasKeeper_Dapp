@@ -24,7 +24,6 @@ const L1L2Console: React.FC = () => {
   /* 统一调用函数 */
   const call = async (layer: Layer, action: Method) => {
     const key = `${layer}_${action}`;
-    console.log('call', layer, action)
     setLoading({ ...loading, [key]: true });
     try {
       let data: any;
